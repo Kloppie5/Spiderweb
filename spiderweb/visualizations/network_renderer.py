@@ -48,10 +48,33 @@ class NetworkRenderer:
         return positions
     
     def _draw_connections(self, canvas, positions):
-        for i in range(len(positions) - 1):
-            for (x1, y1) in positions[i]:
-                for (x2, y2) in positions[i + 1]:
-                    canvas.create_line(x1, y1, x2, y2)
+        for i, layer in enumerate(self.network.layers[:-1]):
+            next_layer = self.network.layers[i + 1]
+
+            for j, neuron in enumerate(layer.neurons):
+                for k, next_neuron in enumerate(next_layer.neurons):
+                    x1, y1 = positions[i][j]
+                    x2, y2 = positions[i + 1][k]
+
+                    weight = next_neuron.weights[j]
+
+                    color = self._weight_to_color(weight)
+                    width = self._weight_to_width(weight)
+
+                    canvas.create_line(x1, y1, x2, y2, fill=color, width=width)
+
+    def _weight_to_color(self, w):
+        if w > 0:
+            intensity = min(255, int(abs(w) * 255))
+            return f"#00{intensity:02x}00"
+        elif w < 0:
+            intensity = min(255, int(abs(w) * 255))
+            return f"#{intensity:02x}0000"
+        else:
+            return "#cccccc"
+
+    def _weight_to_width(self, w):
+        return max(2, abs(w) * 10)
 
     def _draw_neurons(self, canvas, positions):
         for layer in positions:
