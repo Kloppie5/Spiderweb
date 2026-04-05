@@ -3,19 +3,24 @@ from nn.layer import Layer
 from nn.network import Network
 from nn.neuron import Neuron
 
-from visualizations.network_plot import print_network
+from visualizations.network_renderer import NetworkRenderer
 
 l1 = Layer([
     Neuron([0.5, -0.5], 0.1, step),
-    Neuron([-0.3, 0.3], -0.2, step)
+    Neuron([-0.3, 0.3], -0.2, step),
+    Neuron([0.2, 0.2], 0.0, step),
 ])
 
 l2 = Layer([
-    Neuron([0.7, -0.4], 0.0, step)
+    Neuron([0.7, -0.4, 0.1], 0.0, step),
+    Neuron([0.1, 0.3, -0.2], 0.2, step),
 ])
 
-net = Network([l1, l2])
+l3 = Layer([
+    Neuron([0.5, -0.5], 0.0, step)
+])
 
-print_network(net)
+net = Network([l1, l2, l3])
 
-print(net.forward([1.0, 2.0]))
+renderer = NetworkRenderer(net)
+renderer.render()
