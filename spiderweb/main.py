@@ -1,7 +1,9 @@
-from activations import step
-from layer import Layer
-from network import Network
-from neuron import Neuron
+from nn.activations import step
+from nn.layer import Layer
+from nn.network import Network
+from nn.neuron import Neuron
+
+from visualizations.network_plot import print_network
 
 l1 = Layer([
     Neuron([0.5, -0.5], 0.1, step),
@@ -13,5 +15,7 @@ l2 = Layer([
 ])
 
 net = Network([l1, l2])
+
+print_network(net)
 
 print(net.forward([1.0, 2.0]))
