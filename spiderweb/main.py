@@ -1,12 +1,17 @@
-from neuron import Neuron
 from activations import step
+from layer import Layer
+from network import Network
+from neuron import Neuron
 
-neuron = Neuron(
-    weights = [0.5, -0.5],
-    bias = 0.1,
-    activation = step
-)
+l1 = Layer([
+    Neuron([0.5, -0.5], 0.1, step),
+    Neuron([-0.3, 0.3], -0.2, step)
+])
 
-inputs = [1.0, 2.0]
+l2 = Layer([
+    Neuron([0.7, -0.4], 0.0, step)
+])
 
-print("Output:", neuron.forward(inputs))
+net = Network([l1, l2])
+
+print(net.forward([1.0, 2.0]))
