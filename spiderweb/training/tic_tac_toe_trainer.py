@@ -27,11 +27,18 @@ class Trainer:
                 return winner, history
 
     def train_from_game(self, history, result):
-        reward = 1 if result == 1 else -1
+        lr = 0.1
+
+        reward = 1 if result == 1 else -1 if result == -1 else 0
+
+        output_layer = self.agent.network.layers[-1]
 
         for board, move in history:
-            inputs = board
+            outputs = self.agent.network.forward(board)
 
-            for neuron in self.agent.network.layers[-1].neurons:
-                for i in range(len(neuron.weights)):
-                    neuron.weights[i] += reward * inputs[i] * 0.01
+            target = [0.0] * len(outputs)
+            target[move] = 1.0
+
+            errors = [(outputs[i] - target[i]) * reward for i in range(len(outputs))]
+
+            self.agent.network.backward(errors, lr)

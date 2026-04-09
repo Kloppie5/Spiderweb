@@ -18,7 +18,7 @@ def save_network(network, path):
     with open(path, "w") as f:
         json.dump(data, f)
 
-def load_network(path, neuron_class, layer_class, network_class, activation):
+def load_network(path, neuron_class, layer_class, network_class, activation, activation_derivative):
     with open(path, "r") as f:
         data = json.load(f)
 
@@ -32,7 +32,8 @@ def load_network(path, neuron_class, layer_class, network_class, activation):
                 neuron_class(
                     weights=n["weights"],
                     bias=n["bias"],
-                    activation=activation
+                    activation=activation,
+                    activation_derivative=activation_derivative
                 )
             )
 
