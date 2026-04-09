@@ -18,6 +18,11 @@ class NetworkRenderer:
 
         self.history = []
 
+        self.current_image = None
+        self.current_label = None
+        self.current_prediction = None
+        self.current_outputs = None
+
     def start(self):
         self.root = tk.Tk()
         self.root.title("Neural Network Training")
@@ -38,6 +43,7 @@ class NetworkRenderer:
         self._draw_connections(self.canvas, positions)
         self._draw_neurons(self.canvas, positions)
         self._draw_graph(self.canvas)
+        self._draw_mnist_panel(self.canvas)
 
         self.root.update_idletasks()
         self.root.update()
@@ -173,3 +179,78 @@ class NetworkRenderer:
             font=("Arial", 10),
             fill="gray"
         )
+    
+    def set_mnist_sample(self, image, label, outputs):
+        self.current_image = image
+        self.current_label = label
+        self.current_outputs = outputs
+        self.current_prediction = outputs.index(max(outputs))
+
+    def _draw_mnist_panel(self, canvas):
+        x_offset = self.network_width + 20
+        y_offset = 50
+        pixel_size = 8
+
+        canvas.create_text(
+            x_offset + 100,
+            20,
+            text="MNIST Input",
+            font=("Arial", 12, "bold")
+        )
+
+        if self.current_image:
+            for i in range(28):
+                for j in range(28):
+                    val = self.current_image[i * 28 + j]
+                    gray = int(val * 255)
+
+                    color = f"#{gray:02x}{gray:02x}{gray:02x}"
+
+                    x1 = x_offset + j * pixel_size
+                    y1 = y_offset + i * pixel_size
+
+                    canvas.create_rectangle(
+                        x1, y1,
+                        x1 + pixel_size,
+                        y1 + pixel_size,
+                        fill=color,
+                        outline=color
+                    )
+
+        if self.current_prediction is not None:
+            canvas.create_text(
+                x_offset + 100,
+                300,
+                text=f"Pred: {self.current_prediction}",
+                font=("Arial", 14, "bold"),
+                fill="blue"
+            )
+
+            canvas.create_text(
+                x_offset + 100,
+                330,
+                text=f"Label: {self.current_label}",
+                font=("Arial", 14),
+                fill="green" if self.current_prediction == self.current_label else "red"
+            )
+
+        if self.current_outputs:
+            base_y = 370
+
+            for i, v in enumerate(self.current_outputs):
+                bar_len = v * 100
+
+                canvas.create_rectangle(
+                    x_offset,
+                    base_y + i * 15,
+                    x_offset + bar_len,
+                    base_y + i * 15 + 10,
+                    fill="blue"
+                )
+
+                canvas.create_text(
+                    x_offset - 15,
+                    base_y + i * 15 + 5,
+                    text=str(i),
+                    font=("Arial", 8)
+                )
