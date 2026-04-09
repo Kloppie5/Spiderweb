@@ -22,6 +22,8 @@ class NetworkRenderer:
         self.current_label = None
         self.current_prediction = None
         self.current_outputs = None
+        
+        self.positions = self._calculate_positions()
 
     def start(self):
         self.root = tk.Tk()
@@ -38,10 +40,8 @@ class NetworkRenderer:
     def update(self):
         self.canvas.delete("all")
 
-        positions = self._calculate_positions()
-
-        self._draw_connections(self.canvas, positions)
-        self._draw_neurons(self.canvas, positions)
+        self._draw_connections(self.canvas, self.positions)
+        self._draw_neurons(self.canvas, self.positions)
         self._draw_graph(self.canvas)
         self._draw_mnist_panel(self.canvas)
 

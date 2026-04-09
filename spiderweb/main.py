@@ -136,9 +136,6 @@ def train_mnist():
         result = trainer.get_result(img)
         trainer.train_from_result(result, label)
         image += 1
-
-        renderer.set_mnist_sample(img, label, result)
-        renderer.update()
         
         prediction = result.index(max(result))
         if prediction == label:
@@ -151,10 +148,11 @@ def train_mnist():
             print(f"  Wins:   {correct} ({win_rate:.1f}%)")
             print("-" * 30)
 
-        if image % 10 == 0:
+        if image % 2000 == 0:
+            renderer.set_mnist_sample(img, label, result)
             renderer.update()
 
-        if image % 1000 == 0:
+        if image % 10000 == 0:
             save_network(net, MODEL_PATH)
     
 train_mnist()
