@@ -13,55 +13,96 @@ class NetworkRenderer:
         self.layer_spacing = 200
         self.neuron_spacing = 80
 
-    def render(self):
-        root = tk.Tk()
-        root.title("Neural Network")
+        self.network_width = int(self.width * 0.6)
+        self.graph_width = self.width - self.network_width
 
-        canvas = tk.Canvas(root, width=self.width, height=self.height, bg="white")
-        canvas.pack()
+        self.history = []
+
+    def start(self):
+        self.root = tk.Tk()
+        self.root.title("Neural Network Training")
+
+        self.canvas = tk.Canvas(
+            self.root,
+            width=self.width,
+            height=self.height,
+            bg="white"
+        )
+        self.canvas.pack()
+
+    def update(self):
+        self.canvas.delete("all")
 
         positions = self._calculate_positions()
 
-        self._draw_connections(canvas, positions)
-        self._draw_neurons(canvas, positions)
+        self._draw_connections(self.canvas, positions)
+        self._draw_neurons(self.canvas, positions)
+        self._draw_graph(self.canvas)
 
-        root.mainloop()
+        self.root.update_idletasks()
+        self.root.update()
 
     def _calculate_positions(self):
         positions = []
 
+        input_size = len(self.network.layers[0].neurons[0].weights)
+        input_positions = []
+        for j in range(input_size):
+            x = self.network_width / (len(self.network.layers) + 2)
+            y = (j + 1) * self.height / (input_size + 1)
+            input_positions.append((x, y))
+        positions.append(input_positions)
+
         num_layers = len(self.network.layers)
-
         for i, layer in enumerate(self.network.layers):
-            layer_positions = []
 
-            x = (i + 1) * self.width / (num_layers + 1)
+            x = (i + 2) * self.network_width / (num_layers + 2)
 
             num_neurons = len(layer.neurons)
-
+            layer_positions = []
             for j in range(num_neurons):
                 y = (j + 1) * self.height / (num_neurons + 1)
                 layer_positions.append((x, y))
-
             positions.append(layer_positions)
 
         return positions
     
     def _draw_connections(self, canvas, positions):
+
+        input_size = len(self.network.layers[0].neurons[0].weights)
+        for j in range(input_size):
+            x1, y1 = positions[0][j]
+
+            for k, neuron in enumerate(self.network.layers[0].neurons):
+                x2, y2 = positions[1][k]
+
+                weight = neuron.weights[j]
+
+                canvas.create_line(
+                    x1, y1, x2, y2,
+                    fill=self._weight_to_color(weight),
+                    width=self._weight_to_width(weight)
+                )
+
         for i, layer in enumerate(self.network.layers[:-1]):
             next_layer = self.network.layers[i + 1]
 
             for j, neuron in enumerate(layer.neurons):
                 for k, next_neuron in enumerate(next_layer.neurons):
-                    x1, y1 = positions[i][j]
-                    x2, y2 = positions[i + 1][k]
+                    x1, y1 = positions[i + 1][j]
+                    x2, y2 = positions[i + 2][k]
 
                     weight = next_neuron.weights[j]
 
                     color = self._weight_to_color(weight)
                     width = self._weight_to_width(weight)
 
-                    canvas.create_line(x1, y1, x2, y2, fill=color, width=width)
+                    canvas.create_line(
+                        x1, y1,
+                        x2, y2,
+                        fill=color,
+                        width=width
+                    )
 
     def _weight_to_color(self, w):
         if w > 0:
@@ -77,7 +118,58 @@ class NetworkRenderer:
         return max(2, abs(w) * 10)
 
     def _draw_neurons(self, canvas, positions):
-        for layer in positions:
+        for i, layer in enumerate(positions):
             for (x, y) in layer:
                 r = self.node_radius
-                canvas.create_oval(x - r, y - r, x + r, y + r, fill="lightblue")
+
+                if i == 0:
+                    color = "lightgreen"
+                else:
+                    color = "lightblue"
+
+                canvas.create_oval(
+                    x - r, y - r,
+                    x + r, y + r,
+                    fill=color,
+                    outline="black"
+                )
+
+    def _draw_graph(self, canvas):
+        if len(self.history) < 2:
+            return
+
+        x_offset = self.network_width
+        w = self.graph_width
+        h = self.height
+
+        max_points = 200
+        data = self.history[-max_points:]
+
+        for i in range(len(data) - 1):
+            x1 = x_offset + (i / max_points) * w
+            x2 = x_offset + ((i + 1) / max_points) * w
+
+            y1 = h - data[i] * h
+            y2 = h - data[i + 1] * h
+
+            canvas.create_line(
+                x1, y1,
+                x2, y2,
+                fill="green",
+                width=2
+            )
+
+        canvas.create_text(
+            x_offset + 60,
+            20,
+            text=f"{data[-1]*100:.1f}%",
+            font=("Arial", 14, "bold"),
+            fill="black"
+        )
+        canvas.create_text(
+            x_offset + w / 2,
+            40,
+            text="Win Rate (last 100 games)",
+            font=("Arial", 10),
+            fill="gray"
+        )

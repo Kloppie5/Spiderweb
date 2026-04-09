@@ -41,23 +41,36 @@ else:
 agent = Agent(net)
 trainer = Trainer(agent)
 
+renderer = NetworkRenderer(net)
+renderer.start()
+
 wins = 0
 losses = 0
 draws = 0
 
+result_window = []
+
 game = 0
-win_rate = 0.0
-while win_rate < 82.0:
+while True:
     result, history = trainer.play_game()
     trainer.train_from_game(history, result)
     game += 1
 
     if result == 1:
         wins += 1
+        result_window.append(1)
     elif result == -1:
         losses += 1
+        result_window.append(-1)
     else:
         draws += 1
+        result_window.append(0)
+
+    if len(result_window) > 100:
+        result_window.pop(0)
+
+    rolling_win_rate = sum(result_window) / len(result_window)
+    renderer.history.append(rolling_win_rate)
 
     if game % 100 == 0:
 
@@ -70,7 +83,10 @@ while win_rate < 82.0:
         print(f"  Losses: {losses} ({loss_rate:.1f}%)")
         print(f"  Draws:  {draws} ({draw_rate:.1f}%)")
         print("-" * 30)
-    
 
-save_network(net, MODEL_PATH)
-print("Training done")
+    if game % 10 == 0:
+        renderer.update()
+
+    
+    if game % 1000 == 0:
+        save_network(net, MODEL_PATH)
